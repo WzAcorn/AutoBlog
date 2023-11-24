@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import openai
 import json
+import time
 import TistoryAPI as tistory
 
 # OpenAI API 키 설정
@@ -18,14 +19,26 @@ def reformat_content_for_blog(text, title):
         f"Please write the content being recreated in Korean. and write the post start Title:'title' in 1 sentence."
         f"Rewrite the following news article for a blog post. Make it engaging, "
         f"informative, and suitable for a general audience. Add some interesting "
-        f"comments or opinions to make it more appealing. Title: {title}, Article: {text}"
+        f"comments or opinions to make it more appealing. Title: title, Article: contents"
     )
     response = openai.ChatCompletion.create(
         model="gpt-4-1106-preview",  # Specify the chat model here
-        messages=[{"role": "system", "content": instruction}]
+        messages=[{"role": instruction, "content": f"Title: {title}, Article: {text}"}]
     )
     reformatted_content = response.choices[0].message['content'].strip()
     return reformatted_content
+
+def get_html_tag(text):
+    instruction = (
+        f"Split the paragraphs of the article and add html tags"
+        f"Please don't reply other than adding tags."
+    )
+    response = openai.ChatCompletion.create(
+        model="gpt-4-1106-preview",  # Specify the chat model here
+        messages=[{"role": instruction, "content": text}]
+    )
+    content = response.choices[0].message['content'].strip()
+    return content
 
 
 # AI Times 웹사이트 URL
@@ -81,13 +94,15 @@ def get_top_articles(url):
         content = get_article_content(full_link)
         blog_contents = reformat_content_for_blog(text=content,title=title)
         retitle, re_blog_contents = extract_title_and_content(blog_contents)
+        re_blog_contents = get_html_tag(re_blog_contents)
+        re_blog_contents+"\n\n"+full_link
 
-    return retitle, re_blog_contents, full_link, 
+    return retitle, re_blog_contents 
 
 
     
 
 # 함수 실행
 title, content= get_top_articles(url)
-tistory.postWrite(blog_name="wzacorn", title=title, content=content)
-print("완료")
+#tistory.postWrite(blog_name="wzacorn", title=title, content=content)
+print("게시 완료")
