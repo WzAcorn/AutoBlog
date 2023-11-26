@@ -19,11 +19,15 @@ def reformat_content_for_blog(text, title):
         f"Please write the content being recreated in Korean. and write the post start Title:'title' in 1 sentence."
         f"Rewrite the following news article for a blog post. Make it engaging, "
         f"informative, and suitable for a general audience. Add some interesting "
+        f"Take two images and place them in the appropriate positions, one for the thumbnail and one for the article introduction."
         f"comments or opinions to make it more appealing. Title: title, Article: contents"
     )
     response = openai.ChatCompletion.create(
         model="gpt-4-1106-preview",  # Specify the chat model here
-        messages=[{"role": instruction, "content": f"Title: {title}, Article: {text}"}]
+        messages=[
+            {"role": "system", "content": instruction},
+            {"role": "user", "content": f"Title: {title}, Article: {text}"}
+        ]
     )
     reformatted_content = response.choices[0].message['content'].strip()
     return reformatted_content
@@ -35,14 +39,17 @@ def get_html_tag(text):
     )
     response = openai.ChatCompletion.create(
         model="gpt-4-1106-preview",  # Specify the chat model here
-        messages=[{"role": instruction, "content": text}]
+        messages=[
+            {"role": "system", "content": instruction},
+            {"role": "user", "content": f"{text}"}
+        ]
     )
     content = response.choices[0].message['content'].strip()
     return content
 
 
 # AI Times 웹사이트 URL
-url = 'https://www.aitimes.com/'
+
 
 def get_article_content(article_url):
     # 기사 URL에서 HTML 콘텐츠를 가져옴
@@ -95,7 +102,7 @@ def get_top_articles(url):
         blog_contents = reformat_content_for_blog(text=content,title=title)
         retitle, re_blog_contents = extract_title_and_content(blog_contents)
         re_blog_contents = get_html_tag(re_blog_contents)
-        re_blog_contents+"\n\n"+full_link
+        re_blog_contents += "\n<p>기사링크: "+full_link+"<p>"
 
     return retitle, re_blog_contents 
 
@@ -103,6 +110,11 @@ def get_top_articles(url):
     
 
 # 함수 실행
-title, content= get_top_articles(url)
-#tistory.postWrite(blog_name="wzacorn", title=title, content=content)
+AI_url = 'https://www.aitimes.com/'
+title, content= get_top_articles(AI_url)
+
+print(f"title이야: {title}")
+print(f"content이야: {content}")
+tistory.postWrite(blog_name="wzacorn", title=title, content=content)
+
 print("게시 완료")
