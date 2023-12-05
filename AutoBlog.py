@@ -19,7 +19,6 @@ def reformat_content_for_blog(text, title):
         f"Please write the content being recreated in Korean. and write the post start Title:'title' in 1 sentence."
         f"Rewrite the following news article for a blog post. Make it engaging, "
         f"informative, and suitable for a general audience. Add some interesting "
-        f"Take two images and place them in the appropriate positions, one for the thumbnail and one for the article introduction."
         f"comments or opinions to make it more appealing. Title: title, Article: contents"
     )
     response = openai.ChatCompletion.create(
@@ -91,7 +90,7 @@ def get_top_articles(url):
     soup = BeautifulSoup(response.text, 'html.parser')
 
     # '가장 많이 본 기사' 섹션을 찾음
-    top_articles = soup.find_all('div', class_='auto-article', limit=1)
+    top_articles = soup.find_all('div', class_='auto-article', limit=2)
 
     # 각 기사의 제목, 링크, 그리고 내용을 추출
     for article in top_articles:
@@ -102,19 +101,21 @@ def get_top_articles(url):
         blog_contents = reformat_content_for_blog(text=content,title=title)
         retitle, re_blog_contents = extract_title_and_content(blog_contents)
         re_blog_contents = get_html_tag(re_blog_contents)
-        re_blog_contents += "\n<p>기사링크: "+full_link+"<p>"
+        re_blog_contents += "\n<p>출처 AITimes: "+full_link+"<p>"
 
     return retitle, re_blog_contents 
 
 
-    
+test_url = "https://www.aitimes.com//news/articleView.html?idxno=155480"
 
+
+print("파이썬 시작")
 # 함수 실행
 AI_url = 'https://www.aitimes.com/'
 title, content= get_top_articles(AI_url)
-
-print(f"title이야: {title}")
-print(f"content이야: {content}")
 tistory.postWrite(blog_name="wzacorn", title=title, content=content)
+
+# 카테고리 id를 받아오는 함수. default는 news 카
+# tistory.CategoryList(blog_name="wzacorn")
 
 print("게시 완료")

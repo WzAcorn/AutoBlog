@@ -81,15 +81,16 @@ def PostRead(blog_name,post_id):
 
 # 글 작성
 # https://tistory.github.io/document-tistory-apis/apis/v1/post/write.html
-def postWrite(blog_name, title, content="", output_type="json"):
+def postWrite(blog_name, title, content="",category="1147172", visibility="3",output_type="json"):
     url = "https://www.tistory.com/apis/post/write?"
     url += "access_token=" + access_token + "&"
     url += "output=" + output_type + "&"
     url += "blogName=" + blog_name + "&"
     url += "title=" + title + "&"
     url += "content=" + content + "&"
+    url += "visibility=" + visibility + "&"
+    url += "category=" + category
 
-    #data += "category=" + "1024642"
     try:
         res = requests.post(url).text
         return json.loads(res)
