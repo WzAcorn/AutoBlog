@@ -1,3 +1,4 @@
+import logging
 import requests
 from bs4 import BeautifulSoup
 import openai
@@ -6,8 +7,6 @@ import time
 import TistoryAPI as tistory
 
 # OpenAI API 키 설정
-# 이거슨 simon프로님 키 openai.api_key = "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"
-# 이거슨 내 키testkey = "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"
 openai.api_key = "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"
 
 #Tistory API설정.
@@ -15,36 +14,47 @@ access_token = "5d692352dbcea2d43384a81c7f459de1_0590de3c23fcadafa068dfcb97ff68b
 redirect_uri = "https://wzacorn.tistory.com/"
 
 def reformat_content_for_blog(text, title):
-    instruction = (
-        f"Please write the content being recreated in Korean. and write the post start Title:'title' in 1 sentence."
-        f"Rewrite the following news article for a blog post. Make it engaging, "
-        f"informative, and suitable for a general audience. Add some interesting "
-        f"comments or opinions to make it more appealing. Title: title, Article: contents"
-    )
-    response = openai.ChatCompletion.create(
-        model="gpt-4-1106-preview",  # Specify the chat model here
-        messages=[
-            {"role": "system", "content": instruction},
-            {"role": "user", "content": f"Title: {title}, Article: {text}"}
-        ]
-    )
-    reformatted_content = response.choices[0].message['content'].strip()
-    return reformatted_content
+    try:
+        instruction = (
+            f"You are a top-notch blogger with super high profits."
+            f"Please write the content being recreated in Korean. and write the post start Title:'{title}' in 1 sentence."
+            f"Rewrite the following news article for a blog post. Make it engaging, Plain"
+            f"comments or opinions to make it more appealing. Title: {title}, Article: {text}"
+        )
+        response = openai.ChatCompletion.create(
+            model="gpt-4-1106-preview",  # Specify the chat model here
+            messages=[
+                {"role": "system", "content": instruction},
+                {"role": "user", "content": f"Title: {title}, Article: {text}"}
+            ]
+        )
+        reformatted_content = response.choices[0].message['content'].strip()
+        logging.info("reformat_content_for_blog 성공",reformatted_content)
+        return reformatted_content
+    except Exception as e:
+        logging.info(f"reformat_content_for_blog 오류 발생: {e}")
+        return ""
 
 def get_html_tag(text):
-    instruction = (
-        f"Split the paragraphs of the article and add html tags"
-        f"Please don't reply other than adding tags."
-    )
-    response = openai.ChatCompletion.create(
-        model="gpt-4-1106-preview",  # Specify the chat model here
-        messages=[
-            {"role": "system", "content": instruction},
-            {"role": "user", "content": f"{text}"}
-        ]
-    )
-    content = response.choices[0].message['content'].strip()
-    return content
+    try:
+        instruction = (
+            f"Split the paragraphs of the article and add html tags"
+            f"Please don't reply other than adding tags."
+        )
+        response = openai.ChatCompletion.create(
+            model="gpt-4-1106-preview",  # Specify the chat model here
+            messages=[
+                {"role": "system", "content": instruction},
+                {"role": "user", "content": f"{text}"}
+            ]
+        )
+        content = response.choices[0].message['content'].strip()
+        logging.info("get_html_tag 성공:",content)
+        return content
+    except Exception as e:
+        logging.error(f"get_html_tag 오류 발생: {e}")
+        return ""
+        
 
 
 # AI Times 웹사이트 URL
@@ -90,7 +100,7 @@ def get_top_articles(url):
     soup = BeautifulSoup(response.text, 'html.parser')
 
     # '가장 많이 본 기사' 섹션을 찾음
-    top_articles = soup.find_all('div', class_='auto-article', limit=2)
+    top_articles = soup.find_all('div', class_='auto-article', limit=1)
 
     # 각 기사의 제목, 링크, 그리고 내용을 추출
     for article in top_articles:
@@ -99,23 +109,21 @@ def get_top_articles(url):
         full_link = url + link
         content = get_article_content(full_link)
         blog_contents = reformat_content_for_blog(text=content,title=title)
+        print("blog_contents:", blog_contents)
         retitle, re_blog_contents = extract_title_and_content(blog_contents)
         re_blog_contents = get_html_tag(re_blog_contents)
         re_blog_contents += "\n<p>출처 AITimes: "+full_link+"<p>"
+        tistory.postWrite(blog_name="wzacorn", title=retitle, content=re_blog_contents)
+    
+    return "완료"
 
-    return retitle, re_blog_contents 
-
-
-test_url = "https://www.aitimes.com//news/articleView.html?idxno=155480"
 
 
 print("파이썬 시작")
 # 함수 실행
 AI_url = 'https://www.aitimes.com/'
-title, content= get_top_articles(AI_url)
-tistory.postWrite(blog_name="wzacorn", title=title, content=content)
+print(get_top_articles(AI_url))
 
 # 카테고리 id를 받아오는 함수. default는 news 카
 # tistory.CategoryList(blog_name="wzacorn")
 
-print("게시 완료")
