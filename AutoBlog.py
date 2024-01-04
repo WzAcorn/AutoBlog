@@ -7,7 +7,7 @@ import time
 import TistoryAPI as tistory
 
 # OpenAI API 키 설정
-openai.api_key = "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"
+openai.api_key = "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"
 
 #Tistory API설정.
 access_token = "5d692352dbcea2d43384a81c7f459de1_0590de3c23fcadafa068dfcb97ff68b4"
