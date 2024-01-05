@@ -7,7 +7,7 @@ import time
 import TistoryAPI as tistory
 
 # OpenAI API 키 설정
-openai.api_key = "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"
+openai.api_key = "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"
 
 #Tistory API설정.
 access_token = "5d692352dbcea2d43384a81c7f459de1_0590de3c23fcadafa068dfcb97ff68b4"
@@ -113,7 +113,7 @@ def get_top_articles(url):
         retitle, re_blog_contents = extract_title_and_content(blog_contents)
         re_blog_contents = get_html_tag(re_blog_contents)
         re_blog_contents += "\n<p>출처 AITimes: "+full_link+"<p>"
-        tistory.postWrite(blog_name="wzacorn", title=retitle, content=re_blog_contents)
+        tistory.postWrite(blog_name="wzacorn", title=retitle, content=re_blog_contents, visibility="1")
     
     return "완료"
 
