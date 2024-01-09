@@ -81,21 +81,24 @@ def PostRead(blog_name,post_id):
 
 # 글 작성
 # https://tistory.github.io/document-tistory-apis/apis/v1/post/write.html
-def postWrite(blog_name, title, content="",category="1147172", visibility="3",output_type="json"):
-    url = "https://www.tistory.com/apis/post/write?"
-    url += "access_token=" + access_token + "&"
-    url += "output=" + output_type + "&"
-    url += "blogName=" + blog_name + "&"
-    url += "title=" + title + "&"
-    url += "content=" + content + "&"
-    url += "visibility=" + visibility + "&"
-    url += "category=" + category
-
+def postWrite(blogName, title="", content="",category="1147172", visibility="3",output_type="json"):
+    tistory_url = 'https://www.tistory.com/apis/post/write' #url
+    
+    parameters = {
+    'access_token' : access_token,
+    'output' : '{output-type}',
+    'blogName' : blogName,
+    'title' : title,
+    'content' : content,
+    'visibility' : '3',
+    'category' : category,
+    'acceptComment' : '1'
+    }
+    
     try:
-        res = requests.post(url).text
-        return json.loads(res)
+        return requests.post(tistory_url, params=parameters)  #최종완료 Response가 200일시 완료임.
     except json.JSONDecodeError:
-        print("JSON decoding error. Response was:", res)
+        print("JSON decoding error. ")
         return None
     
 
